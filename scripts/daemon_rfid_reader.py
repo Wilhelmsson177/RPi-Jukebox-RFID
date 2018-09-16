@@ -1,19 +1,23 @@
 import subprocess
-import os 
-from Reader import Reader
+import os
 
-reader = Reader()
+import nxppy
+import time
+
+mifare = nxppy.Mifare()
 
 # get absolute path of this script
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-print dir_path
-
 while True:
         # reading the card id
-        cardid = reader.readCard()
         try:
-            # start the player script and pass on the cardid 
-            subprocess.call([dir_path + '/rfid_trigger_play.sh --cardid=' + cardid], shell=True)
+            uid = mifare.select()
+            print uid
+            subprocess.call(["{}/rfid_trigger_play.sh --cardid={}".format(dir_path, uid)], shell=True)
+        except nxppy.SelectError:
+            # SelectError is raised if no card is in the field.
+            pass
         except OSError as e:
-            print "Execution failed:" 
+            print "Execution failed: {}".format(e)
+        time.sleep(0.5)
